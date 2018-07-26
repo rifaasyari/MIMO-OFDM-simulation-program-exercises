@@ -1,32 +1,11 @@
 import numpy as np
-import time
-import numba
-import tensorflow as tf
-
-A = tf.random_normal([10,10])
-B = tf.random_normal([10,10])
 
 
-start_time = time.time()
-C = np.dot(A,B)
-
-#print ("time elapsed: {:.2f}s".format(time.time() - start_time))
-
-
-
-
-
-start_time = time.time()
-C = tf.matmul(A,B)
-with tf.Session() as sess:
-    result = sess.run(C)
-
-#print ("time elapsed: {:.2f}s".format(time.time() - start_time))
-#print(result)
-mat = np.zeros(shape=(5, 1),dtype=complex)
-
-a = np.arange(3)-2
-
-b = np.linalg.norm(a) * np.linalg.norm(a)
-print(b)
-#print(np.matrix([0j] * 5).T)
+xx = np.random.normal(0, 1 / np.sqrt(2), size = (2, 2)) + 1J * np.random.normal(0, 1 / np.sqrt(2), size = (2, 2))
+print(np.linalg.norm(xx))
+H = [[0j]*2 for i in range(2)]
+H = np.matrix(H)
+for m in range(2):
+    for n in range(2):
+        H[m, n] = 1 / np.sqrt(2) * np.random.randn() + 1j / np.sqrt(2) * np.random.randn()
+print(np.linalg.norm(H))
