@@ -10,14 +10,15 @@
 #include <Eigen/Dense>
 using namespace Eigen;
 using namespace std;
+
 vector<int> plusOne(vector<int>& digits);
 double gaussgen(double mean,double stddev);
 void channel_gen(MatrixXcd &channel_H, int Nt, int Nr);
 void ML_detection(vector<int>& index, MatrixXcd &channel_H, MatrixXcd &detect, MatrixXcd &detect_y, MatrixXcd &optimal_detection, MatrixXcd &receive_symbol, double *min_distance, MatrixXcd &constellation, int Nt, int Nr);
 
-
 int main()
 {
+
     srand(time(NULL));   //srand
 //----------------start------------------------------------
 	//fstream QAM_mimo_2x2;
@@ -28,9 +29,9 @@ int main()
         min_distance = 99999.0,
         N0 = 0.0;
 
-    int N = 100,
-        Nt = 4,
-        Nr = 4,
+    int N = 1000,
+        Nt = 2,
+        Nr = 2,
         error = 0;
 
     MatrixXcd channel_H = MatrixXd::Zero(Nr,Nt);
@@ -58,10 +59,12 @@ int main()
     double Eb = Es / (double)K;
 
     clock_t t;
-
+    t = clock();
+    //#pragma omp parallel
     for(int i = 0 ; i < len_snr; i++){
         error = 0;
-        t = clock();
+
+        //#pragma omp parallel for
         for(int j = 0 ; j < N ; j++){
 
             index[0] = 0;
@@ -83,6 +86,7 @@ int main()
 
             ML_detection(index, channel_H, detect, detect_y, optimal_detection, receive_symbol, &min_distance, constellation, Nt, Nr);
 
+
             for(int err_i = 0 ; err_i < Nt ; err_i++){
                 int test_real = fabs((optimal_detection - tx_symbol).real()(err_i, 0));
                 int test_imag = fabs((optimal_detection - tx_symbol).imag()(err_i, 0));
@@ -103,12 +107,15 @@ int main()
         }
 
         ber[i] = (double)error / (double)(K * Nt * N );
-        t = clock() - t;
-        cout << "time elapsed " << (double) t/(double)CLOCKS_PER_SEC << "sec " << endl;
-        cout << ber[i]  << endl << endl;
+
 
     }
 
+        for(int i = 0; i < 13 ; i++){
+        cout << " snr: i, ber =  " << ber[i]  << endl << endl;
+    }
+    t = clock() - t;
+        cout << "time elapsed " << (double) t/(double)CLOCKS_PER_SEC << "sec " << endl;
     return 0;
 }
 
@@ -150,6 +157,7 @@ double gaussgen(double mean, double stddev)
 void ML_detection(vector<int>& index, MatrixXcd &channel_H, MatrixXcd &detect, MatrixXcd &detect_y, MatrixXcd &optimal_detection, MatrixXcd &receive_symbol, double *min_distance, MatrixXcd &constellation, int Nt, int Nr){
 
     while(index[0] != 1){
+
         for(int j = 1 ; j < Nt+1 ; j++){
 
             detect(j-1, 0) = constellation(0, index[j]);
