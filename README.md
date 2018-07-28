@@ -14,3 +14,5 @@
 python版本ML detection為遞迴方法
 
 修正一些小bugs，C++版本ML detection改為非遞迴方法
+
+其中c++版本使用了第三方函式庫eigen，原本想使用armadillo+openblas配置，但研究了半天還是失敗，果斷放棄用openblas
