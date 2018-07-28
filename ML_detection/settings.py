@@ -7,9 +7,9 @@ class Settings():
         self.snr_db = [0] * 13
         self.snr = [0] * len(self.snr_db)
         self.ber = [0] * len(self.snr_db)
-        self.N = 10000  # 執行N次來找錯誤率
-        self.Nt = 2  # 傳送端天線數
-        self.Nr = 2  # 接收端天線數
+        self.N = 1  # 執行N次來找錯誤率
+        self.Nt = 8 # 傳送端天線數
+        self.Nr = 8  # 接收端天線數
         self.Eb = 0
         self.error = 0
 
@@ -40,7 +40,7 @@ class Settings():
         energy = np.linalg.norm(self.constellation) ** 2
         Es = energy / self.len
         self.Eb = Es / self.K
-        print(energy)
+        #print(energy)
 
     def tx_symbol_gen(self):
         self.tx_symbol = np.stack(random.sample(self.constellation, self.Nt)).reshape(self.Nt, 1)

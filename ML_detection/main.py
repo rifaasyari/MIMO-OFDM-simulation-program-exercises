@@ -21,6 +21,8 @@ for i in range(len(mimo_settings.snr)):
         mf.check_and_sum_bit_error(mimo_settings, i)
     print("time elapsed: {:.2f}s".format(time.time() - start_time))
 
+    print(mimo_settings.ber)
+
 plt.semilogy(mimo_settings.snr_db, mimo_settings.ber, marker='o', label='ML detection for 16QAM (Nt=1 , Nr=1 )')
 plt.xlabel('Eb/No , dB')
 plt.ylabel('ber')
