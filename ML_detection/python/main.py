@@ -23,7 +23,7 @@ for i in range(len(mimo_settings.snr)):
 
     print(mimo_settings.ber)
 
-plt.semilogy(mimo_settings.snr_db, mimo_settings.ber, marker='o', label='ML detection for 16QAM (Nt=1 , Nr=1 )')
+plt.semilogy(mimo_settings.snr_db, mimo_settings.ber, marker='o', label='ML detection for 16QAM (Nt=2 , Nr=2 )')
 plt.xlabel('Eb/No , dB')
 plt.ylabel('ber')
 plt.legend()
