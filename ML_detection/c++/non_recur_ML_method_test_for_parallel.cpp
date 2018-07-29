@@ -25,9 +25,9 @@ int main()
 //處理器共用變數
     const int thread_len = omp_get_num_procs(),
         snr_len = 16,
-        N = 1e6,
-        Nt = 1,
-        Nr = 1;
+        N = 1000,
+        Nt = 2,
+        Nr = 2;
     MatrixXcd constellation(1,16);
     constellation << 1.0 + 1.0i, 1.0 + 3.0i, 3.0 + 1.0i, 3.0 + 3.0i, -1.0 + 1.0i, -1.0 + 3.0i, -3.0 + 1.0i, -3.0 + 3.0i,
                     -1.0 - 1.0i, -1.0 - 3.0i, -3.0 - 1.0i, -3.0 - 3.0i, 1.0 - 1.0i, 1.0 - 3.0i, 3.0 - 1.0i, 3.0 - 3.0i;
@@ -69,8 +69,8 @@ int main()
     clock_t t;
     t = clock();
 
-	fstream mimo_16QAM_2x2;
-	mimo_16QAM_2x2.open("mimo_16QAM_1x1.txt",ios::out);
+	//fstream mimo_16QAM_2x2;
+	//mimo_16QAM_2x2.open("mimo_16QAM_1x1.txt",ios::out);
 
 	//平行處理snr資料
     #pragma omp parallel for private(thread_i)
@@ -129,11 +129,11 @@ int main()
     //snr forloop end
     //parallel process end
 
-    mimo_16QAM_2x2 << "snr_db" << "           " << "ber" << endl;
+    //mimo_16QAM_2x2 << "snr_db" << "           " << "ber" << endl;
     for(unsigned int i = 0; i < snr_len ; i++){
 
-        mimo_16QAM_2x2 << setw(6) << fixed << setprecision(1) <<  snr_db[i] << "    "  << setprecision(8) << ber[i] << endl;
-        //cout << " snr_db: "<< snr_db[i] << " ber =  " << ber[i]  << endl;
+        //mimo_16QAM_2x2 << setw(6) << fixed << setprecision(1) <<  snr_db[i] << "    "  << setprecision(8) << ber[i] << endl;
+        cout << " snr_db: "<< snr_db[i] << " ber =  " << ber[i]  << endl;
 
     }
 
@@ -146,11 +146,11 @@ int main()
     total_sec /= 24;
     int t_day = (int)total_sec % 24;
 
-    mimo_16QAM_2x2 << endl;
-    mimo_16QAM_2x2 << "time elapsed " << t_day << "day " << t_hour << "hour " << t_min << "min " << t_sec << "sec " << endl;
-    //cout << "time elapsed " << t_day << "day " << t_hour << "hour " << t_min << "min " << t_sec << "sec " << endl;
+    //mimo_16QAM_2x2 << endl;
+    //mimo_16QAM_2x2 << "time elapsed " << t_day << "day " << t_hour << "hour " << t_min << "min " << t_sec << "sec " << endl;
+    cout << "time elapsed " << t_day << "day " << t_hour << "hour " << t_min << "min " << t_sec << "sec " << endl;
 
-    mimo_16QAM_2x2.close();
+    //mimo_16QAM_2x2.close();
     return 0;
 }
 
