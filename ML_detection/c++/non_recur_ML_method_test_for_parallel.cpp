@@ -1,5 +1,3 @@
-#define PI 3.1415926535897932
-#define ROOT_2 1.414213562
 #include <omp.h>
 #include <stdio.h>
 #include <iostream>
@@ -8,11 +6,14 @@
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
-#include <string>
 #include <vector>
 #include <Eigen/Dense>
 using namespace Eigen;
 using namespace std;
+
+double PI =  3.141592653;
+double ROOT_2 =1.414213562;
+
 
 vector<int> plusOne(vector<int>& digits);
 double gaussgen(double mean,double stddev);
