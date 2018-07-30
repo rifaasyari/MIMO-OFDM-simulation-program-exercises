@@ -1,6 +1,7 @@
 #define PI 3.1415926535897932
 #define ROOT_2 1.414213562
 #include <omp.h>
+#include <stdio.h>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -24,10 +25,10 @@ int main()
 
 //處理器共用變數
     const int thread_len = omp_get_num_procs(),
-        snr_len = 16,
-        N = 1000,
-        Nt = 2,
-        Nr = 2;
+        snr_len = 14,
+        N = 1000000,
+        Nt = 4,
+        Nr = 4;
     MatrixXcd constellation(1,16);
     constellation << 1.0 + 1.0i, 1.0 + 3.0i, 3.0 + 1.0i, 3.0 + 3.0i, -1.0 + 1.0i, -1.0 + 3.0i, -3.0 + 1.0i, -3.0 + 3.0i,
                     -1.0 - 1.0i, -1.0 - 3.0i, -3.0 - 1.0i, -3.0 - 3.0i, 1.0 - 1.0i, 1.0 - 3.0i, 3.0 - 1.0i, 3.0 - 3.0i;
@@ -39,6 +40,7 @@ int main()
 
 //處理器非共用參數，這裡創了數量為核心數的倍數空間，代替了平行執行完後空間釋放問題
     int thread_i;
+    vector<double> time_count(thread_len, 0);
     vector<double> min_distance(thread_len, 99999.0);
     vector<MatrixXcd> channel_H(thread_len), tx_symbol(thread_len), receive_symbol(thread_len), detect(thread_len), detect_y(thread_len), optimal_detection(thread_len);
     vector<vector<int> > index(thread_len, vector<int>(Nt + 1, 0));
@@ -57,7 +59,7 @@ int main()
         N0[snr_len] = {0.0};
     int error[snr_len] = {0};
     for(unsigned int i = 0 ; i < snr_len ; i++){
-        snr_db[i] =  1.8 * i ;
+        snr_db[i] = i * 2 ;
         snr[i] = pow(10.0, snr_db[i] / 10.0);
         //這裡乘上Nr為normalization，代表每個接收天線能量相同，有Nr個接收天線
         N0[i] = Eb * Nr / snr[i];
@@ -69,17 +71,17 @@ int main()
     clock_t t;
     t = clock();
 
-	//fstream mimo_16QAM_2x2;
-	//mimo_16QAM_2x2.open("mimo_16QAM_1x1.txt",ios::out);
+	fstream mimo_16QAM_2x2;
+	mimo_16QAM_2x2.open("mimo_16QAM_4x4.txt",ios::out);
 
-	//平行處理snr資料
-    #pragma omp parallel for private(thread_i)
     for(unsigned int i = 0 ; i < snr_len; i++){
 
-        //獲取處理編號
-        thread_i = omp_get_thread_num();
-
+        //平行處理snr資料
+        #pragma omp parallel for private(thread_i)
         for(unsigned int j = 0 ; j < N ; j++){
+
+            //獲取處理編號
+            thread_i = omp_get_thread_num();
 
             //index的0位置為存放ML是否搜尋完畢，0為未搜完，1為已搜完
             //其他位置存放天線的星座點位置編號
@@ -118,8 +120,19 @@ int main()
                 else if(fabs((optimal_detection[thread_i] - tx_symbol[thread_i]).imag()(err_i, 0)) == 4){
                     error[i] += 2;
                 }
+
             }
+//--------vvvvv--time counter--vvvvv----------------------------------------------------------
+/*
+            if(j%(snr_len * N/80) == 0){
+                time_count[thread_i] += 10;
+                printf("thread %d, complete %f%%\n", thread_i,time_count[thread_i]);
+            }
+*/
+//--------^^^^^--time counter--^^^^^----------------------------------------------------------
+
         }
+
         ber[i] = (double)error[i] / (double)(K * Nt * N );
 
         //printf("loop %d, thread %d\n", i, thread_i);
@@ -129,12 +142,13 @@ int main()
     //snr forloop end
     //parallel process end
 
-    //mimo_16QAM_2x2 << "snr_db" << "           " << "ber" << endl;
+//--------vvvvv--data output--vvvvv-----------------------------------------------------
+    mimo_16QAM_2x2 << "16QAM data: N = " << N << ", Nt = " << Nt << ", Nr = " << Nr << endl << endl;
+    mimo_16QAM_2x2 << "snr_db" << "           " << "ber" << endl;
     for(unsigned int i = 0; i < snr_len ; i++){
 
-        //mimo_16QAM_2x2 << setw(6) << fixed << setprecision(1) <<  snr_db[i] << "    "  << setprecision(8) << ber[i] << endl;
-        cout << " snr_db: "<< snr_db[i] << " ber =  " << ber[i]  << endl;
-
+        mimo_16QAM_2x2 << setw(6) << fixed << setprecision(1) <<  snr_db[i] << "    "  << setprecision(8) << ber[i] << endl;
+        //cout << " snr_db: "<< snr_db[i] << " ber =  " << ber[i]  << endl;
     }
 
     double total_sec = (double)t / CLOCKS_PER_SEC;
@@ -146,11 +160,13 @@ int main()
     total_sec /= 24;
     int t_day = (int)total_sec % 24;
 
-    //mimo_16QAM_2x2 << endl;
-    //mimo_16QAM_2x2 << "time elapsed " << t_day << "day " << t_hour << "hour " << t_min << "min " << t_sec << "sec " << endl;
-    cout << "time elapsed " << t_day << "day " << t_hour << "hour " << t_min << "min " << t_sec << "sec " << endl;
+    mimo_16QAM_2x2 << endl;
+    mimo_16QAM_2x2 << "time elapsed " << t_day << "day " << t_hour << "hour " << t_min << "min " << t_sec << "sec " << endl;
+    //cout << "time elapsed " << t_day << "day " << t_hour << "hour " << t_min << "min " << t_sec << "sec " << endl;
 
-    //mimo_16QAM_2x2.close();
+    mimo_16QAM_2x2.close();
+//--------^^^^^--data output--^^^^^-----------------------------------------------------
+
     return 0;
 }
 
